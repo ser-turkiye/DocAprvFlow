@@ -32,6 +32,9 @@ public class XTRObjects {
     static String principalName;
     static String exportPath;
 
+    public static void deleteDocument(IInformationObject docu) throws Exception {
+        server.deleteDocument(session, (IDocument) docu);
+    }
     public static void copyDescriptors(IInformationObject sour, IInformationObject targ) throws Exception {
         IValueDescriptor[] sdls = sour.getDescriptorList();
         for(IValueDescriptor sdvl : sdls){

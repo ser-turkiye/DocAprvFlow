@@ -22,7 +22,7 @@ class TEST_DocAprvCreateProcess {
     void testForAgentResult() {
         def agent = new DocAprvCreateProcess()
 
-        binding["AGENT_EVENT_OBJECT_CLIENT_ID"] = "SD08GIB_DOCS24eb53efb7-57e4-4b4a-a44e-4fca282434f2182024-04-30T08:23:08.351Z011"
+        binding["AGENT_EVENT_OBJECT_CLIENT_ID"] = "SD08GIB_DOCS24b0cf1d3e-3cde-4a9d-afd3-da49065ef384182024-05-01T12:20:13.643Z011"
 
         def result = (AgentExecutionResult)agent.execute(binding.variables)
         assert result.resultCode == 0

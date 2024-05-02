@@ -59,11 +59,12 @@ public class DocAprvCreateProcess extends UnifiedAgent {
             proc.setMainInformationObjectID(document.getID());
 
             XTRObjects.copyDescriptors(document, proc);
-            proc.setDescriptorValue("DocumentType", document.getArchiveClass().getName());
-            proc.setDescriptorValue("DocumentNumber", document.getID());
+            proc.setDescriptorValue("To-Receiver", egrp.getID());
+            proc.setDescriptorValue("ObjectType", document.getArchiveClass().getName());
+            proc.setDescriptorValue("ObjectName", document.getID());
             proc.commit();
-
-            XTRObjects.createLink(document, proc);
+            //proc.getID();
+            //XTRObjects.createLink(document, proc);
 
             log.info("Tested.");
 

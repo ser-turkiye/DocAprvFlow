@@ -55,21 +55,6 @@ public class DocAprvReqComplete extends UnifiedAgent {
             if(document == null){
                 throw new Exception("QA-Document not found.");
             }
-
-            /*
-            String dsts = document.getDescriptorValue(Conf.Descriptors.Status, String.class);
-            dsts = (dsts == null? "" : dsts);
-
-            String pctg = processInstance.getDescriptorValue(Conf.Descriptors.ProcCatg, String.class);
-            pctg = (pctg == null? "" : pctg);
-
-            if(pctg.equals("Publish") && dsts.equals("WA4APRV")) {
-                document.setDescriptorValue(Conf.Descriptors.Status, "DRAFT");
-                document.commit();
-            }
-            */
-            processInstance.commit();
-
             log.info("Tested.");
 
         } catch (Exception e) {
