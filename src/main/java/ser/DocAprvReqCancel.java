@@ -56,22 +56,10 @@ public class DocAprvReqCancel extends UnifiedAgent {
                 throw new Exception("QA-Document not found.");
             }
 
-            XTRObjects.deleteDocument(document);
+            document.setDescriptorValue("ObjectState", "Deleted");
+            document.commit();
 
-            /*
-            String dsts = document.getDescriptorValue(Conf.Descriptors.Status, String.class);
-            dsts = (dsts == null? "" : dsts);
-
-            String pctg = processInstance.getDescriptorValue(Conf.Descriptors.ProcCatg, String.class);
-            pctg = (pctg == null? "" : pctg);
-
-            if(pctg.equals("Publish") && dsts.equals("WA4APRV")) {
-                document.setDescriptorValue(Conf.Descriptors.Status, "DRAFT");
-                document.commit();
-            }
-            */
-
-            //processInstance.commit();
+            //XTRObjects.deleteDocument(document);
 
             log.info("Tested.");
 

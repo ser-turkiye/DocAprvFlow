@@ -55,6 +55,10 @@ public class DocAprvReqComplete extends UnifiedAgent {
             if(document == null){
                 throw new Exception("QA-Document not found.");
             }
+
+            document.setDescriptorValue("ObjectState", "Active");
+            document.commit();
+
             log.info("Tested.");
 
         } catch (Exception e) {

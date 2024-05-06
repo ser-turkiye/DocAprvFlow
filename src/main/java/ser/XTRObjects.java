@@ -76,6 +76,7 @@ public class XTRObjects {
         for(String gpId : gIds){
             IGroup mgrp = server.getGroup(session, gpId);
             if(mgrp == null){continue;}
+            if(!mgrp.getName().equals(grpName)){continue;}
             return true;
         }
         return false;

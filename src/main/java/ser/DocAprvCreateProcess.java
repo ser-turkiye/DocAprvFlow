@@ -10,6 +10,8 @@ import de.ser.doxis4.agentserver.UnifiedAgent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 
@@ -41,6 +43,10 @@ public class DocAprvCreateProcess extends UnifiedAgent {
             IUser cusr = XTRObjects.getDocCreatorUser(document);
             String gedt = "_" + (document.getArchiveClass().getName() != null ?
                     document.getArchiveClass().getName() : "_All_Document")+ "_Edit";
+            if(XTRObjects.hasGroupMembers(cusr, gedt)){
+                document.setDescriptorValue("ObjectState", "Active");
+                document.commit();
+            }
 
             IGroup egrp = XTRObjects.findGroup(gedt);
             if(egrp == null){
@@ -48,24 +54,40 @@ public class DocAprvCreateProcess extends UnifiedAgent {
                 egrp.commit();
             }
             if(egrp == null){throw new Exception("Not found/create group '" + gedt + "'");}
-            IWorkbasket gwbk = XTRObjects.getFirstWorkbasket(egrp);
-            if(gwbk == null){
-                gwbk = XTRObjects.createWorkbasket(egrp);
-                gwbk.commit();
+
+            List<String> tors = new ArrayList<String>();
+            IUser[] embs = egrp.getUserMembers();
+            for(IUser embr : embs){
+                IWorkbasket ewbk = XTRObjects.getFirstWorkbasket(embr);
+                if(embr == null){continue;}
+                tors.add(embr.getID());
             }
-            if(gwbk == null){throw new Exception("Not found/create workbasket '" + gedt + "'");}
+
+            if(tors.size() == 0){
+                /*direct active ?? */
+                IWorkbasket gwbk = XTRObjects.getFirstWorkbasket(egrp);
+                if(gwbk == null){
+                    gwbk = XTRObjects.createWorkbasket(egrp);
+                    gwbk.commit();
+                }
+                if(gwbk == null){throw new Exception("Not found/create workbasket '" + gedt + "'");}
+                tors.add(egrp.getID());
+            }
+
             IProcessInstance proc = helper.buildNewProcessInstanceForID(Conf.ProcessInstances.DocumentApproval);
+
 
             proc.setMainInformationObjectID(document.getID());
 
             XTRObjects.copyDescriptors(document, proc);
-            proc.setDescriptorValue("To-Receiver", egrp.getID());
+            proc.setDescriptorValueTyped("To-Receiver"
+                    , tors);
             proc.setDescriptorValue("ObjectType", document.getArchiveClass().getName());
             proc.setDescriptorValue("ObjectName", document.getID());
             proc.commit();
-            //proc.getID();
-            //XTRObjects.createLink(document, proc);
 
+            document.setDescriptorValue("ObjectState", "In-Progress");
+            document.commit();
             log.info("Tested.");
 
         } catch (Exception e) {
