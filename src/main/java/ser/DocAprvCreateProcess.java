@@ -76,7 +76,6 @@ public class DocAprvCreateProcess extends UnifiedAgent {
 
             IProcessInstance proc = helper.buildNewProcessInstanceForID(Conf.ProcessInstances.DocumentApproval);
 
-
             proc.setMainInformationObjectID(document.getID());
 
             XTRObjects.copyDescriptors(document, proc);
