@@ -43,10 +43,14 @@ public class DocAprvCreateProcess extends UnifiedAgent {
             IUser cusr = XTRObjects.getDocCreatorUser(document);
             String gedt = "_" + (document.getArchiveClass().getName() != null ?
                     document.getArchiveClass().getName() : "_All_Document")+ "_Edit";
+            /*
             if(XTRObjects.hasGroupMembers(cusr, gedt)){
                 document.setDescriptorValue("ObjectState", "Active");
                 document.commit();
+                log.info("Passed");
+                return resultSuccess("Passed successfully");
             }
+            */
 
             IGroup egrp = XTRObjects.findGroup(gedt);
             if(egrp == null){
@@ -58,13 +62,13 @@ public class DocAprvCreateProcess extends UnifiedAgent {
             List<String> tors = new ArrayList<String>();
             IUser[] embs = egrp.getUserMembers();
             for(IUser embr : embs){
+                if(embr.getID().equals(cusr.getID())){continue;}
                 IWorkbasket ewbk = XTRObjects.getFirstWorkbasket(embr);
-                if(embr == null){continue;}
+                if(ewbk == null){continue;}
                 tors.add(embr.getID());
             }
 
             if(tors.size() == 0){
-                /*direct active ?? */
                 IWorkbasket gwbk = XTRObjects.getFirstWorkbasket(egrp);
                 if(gwbk == null){
                     gwbk = XTRObjects.createWorkbasket(egrp);
@@ -79,8 +83,8 @@ public class DocAprvCreateProcess extends UnifiedAgent {
             proc.setMainInformationObjectID(document.getID());
 
             XTRObjects.copyDescriptors(document, proc);
-            proc.setDescriptorValueTyped("To-Receiver"
-                    , tors);
+            proc.setDescriptorValue("Sender", cusr.getID());
+            proc.setDescriptorValues("To-Receiver", tors);
             proc.setDescriptorValue("ObjectType", document.getArchiveClass().getName());
             proc.setDescriptorValue("ObjectName", document.getID());
             proc.commit();
