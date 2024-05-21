@@ -43,6 +43,19 @@ public class DocAprvCreateProcess extends UnifiedAgent {
             IUser cusr = XTRObjects.getDocCreatorUser(document);
             String gedt = "_" + (document.getArchiveClass().getName() != null ?
                     document.getArchiveClass().getName() : "_All_Document")+ "_Edit";
+
+            String sndr = "";
+            if(sndr.isEmpty() && Utils.hasDescriptor(document, "Sender")){
+                sndr = document.getDescriptorValue("Sender", String.class);
+                sndr = (sndr == null ? "" : sndr);
+            }
+            if(sndr.isEmpty() && cusr != null){
+                sndr = cusr.getID();
+                sndr = (sndr == null ? "" : sndr);
+            }
+            if(sndr == null){throw new Exception("Sender-ID not found.");}
+            document.setDescriptorValue("Sender", sndr);
+
             /*
             if(XTRObjects.hasGroupMembers(cusr, gedt)){
                 document.setDescriptorValue("ObjectState", "Active");
@@ -68,7 +81,7 @@ public class DocAprvCreateProcess extends UnifiedAgent {
                 tors.add(embr.getID());
             }
 
-            if(tors.size() == 0){
+            //if(tors.size() == 0){
                 IWorkbasket gwbk = XTRObjects.getFirstWorkbasket(egrp);
                 if(gwbk == null){
                     gwbk = XTRObjects.createWorkbasket(egrp);
@@ -76,14 +89,16 @@ public class DocAprvCreateProcess extends UnifiedAgent {
                 }
                 if(gwbk == null){throw new Exception("Not found/create workbasket '" + gedt + "'");}
                 tors.add(egrp.getID());
-            }
+            //}
+
+
+
 
             IProcessInstance proc = helper.buildNewProcessInstanceForID(Conf.ProcessInstances.DocumentApproval);
 
             proc.setMainInformationObjectID(document.getID());
-
             XTRObjects.copyDescriptors(document, proc);
-            proc.setDescriptorValue("Sender", cusr.getID());
+            proc.setDescriptorValue("Sender", sndr);
             proc.setDescriptorValues("To-Receiver", tors);
             proc.setDescriptorValue("ObjectType", document.getArchiveClass().getName());
             proc.setDescriptorValue("ObjectName", document.getID());
