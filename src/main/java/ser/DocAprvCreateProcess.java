@@ -1,9 +1,6 @@
 package ser;
 
-import com.ser.blueline.IDocument;
-import com.ser.blueline.IGroup;
-import com.ser.blueline.IInformationObject;
-import com.ser.blueline.IUser;
+import com.ser.blueline.*;
 import com.ser.blueline.bpm.IProcessInstance;
 import com.ser.blueline.bpm.IWorkbasket;
 import de.ser.doxis4.agentserver.UnifiedAgent;
@@ -56,15 +53,6 @@ public class DocAprvCreateProcess extends UnifiedAgent {
             if(sndr == null){throw new Exception("Sender-ID not found.");}
             document.setDescriptorValue("Sender", sndr);
 
-            /*
-            if(XTRObjects.hasGroupMembers(cusr, gedt)){
-                document.setDescriptorValue("ObjectState", "Active");
-                document.commit();
-                log.info("Passed");
-                return resultSuccess("Passed successfully");
-            }
-            */
-
             IGroup egrp = XTRObjects.findGroup(gedt);
             if(egrp == null){
                 egrp = XTRObjects.createGroup(gedt);
@@ -72,35 +60,13 @@ public class DocAprvCreateProcess extends UnifiedAgent {
             }
             if(egrp == null){throw new Exception("Not found/create group '" + gedt + "'");}
 
-            List<String> tors = new ArrayList<String>();
-            IUser[] embs = egrp.getUserMembers();
-            for(IUser embr : embs){
-                if(embr.getID().equals(cusr.getID())){continue;}
-                IWorkbasket ewbk = XTRObjects.getFirstWorkbasket(embr);
-                if(ewbk == null){continue;}
-                tors.add(embr.getID());
-            }
-
-            //if(tors.size() == 0){
-                IWorkbasket gwbk = XTRObjects.getFirstWorkbasket(egrp);
-                if(gwbk == null){
-                    gwbk = XTRObjects.createWorkbasket(egrp);
-                    gwbk.commit();
-                }
-                if(gwbk == null){throw new Exception("Not found/create workbasket '" + gedt + "'");}
-                tors.add(egrp.getID());
-            //}
-
-
-
-
+            List<String> tors = allMembers(egrp, cusr, null);
             IProcessInstance proc = helper.buildNewProcessInstanceForID(Conf.ProcessInstances.DocumentApproval);
 
             proc.setMainInformationObjectID(document.getID());
-            XTRObjects.copyDescriptors(document, proc);
+            Utils.copyDescriptors(document, proc);
             proc.setDescriptorValue("Sender", sndr);
             proc.setDescriptorValues("To-Receiver", tors);
-            proc.setDescriptorValue("ObjectType", document.getArchiveClass().getName());
             proc.setDescriptorValue("ObjectName", document.getID());
             proc.commit();
 
@@ -118,5 +84,43 @@ public class DocAprvCreateProcess extends UnifiedAgent {
 
         log.info("Finished");
         return resultSuccess("Ended successfully");
+    }
+    public static List<String> allMembers(IGroup xgrp, IUser cusr, List<String> parm) throws Exception {
+
+        List<String> rtrn = parm != null ? parm : new ArrayList<String>();
+
+        /*IWorkbasket gwbk = XTRObjects.getFirstWorkbasket(xgrp);
+        if(parm == null && gwbk == null){
+            gwbk = XTRObjects.createWorkbasket(xgrp);
+            gwbk.commit();
+        }
+        if(parm == null && gwbk == null){throw new Exception("Not found/create workbasket '" + xgrp.getName() + "'");}
+        if(gwbk != null && !rtrn.contains(xgrp.getID())) {
+            rtrn.add(xgrp.getID());
+        }*/
+
+        IUser[] embs = xgrp.getUserMembers();
+        for(IUser embr : embs){
+            if(embr.getID().equals(cusr.getID())){continue;}
+            IWorkbasket ewbk = XTRObjects.getFirstWorkbasket(embr);
+            if(ewbk == null){continue;}
+
+            if(rtrn.contains(embr.getID())) {continue;}
+            rtrn.add(embr.getID());
+        }
+
+        IUnit[] umbs = xgrp.getUnitMembers();
+        for(IUnit umbr : umbs){
+            if(rtrn.contains(umbr.getID())) {continue;}
+            rtrn = allMembers((IGroup) umbr, cusr, rtrn);
+        }
+
+        IGroup[] sgrs = xgrp.getGroupMembers();
+        for(IGroup sgrp : sgrs){
+            if(rtrn.contains(sgrp.getID())) {continue;}
+            rtrn = allMembers(sgrp, cusr, rtrn);
+        }
+
+        return rtrn;
     }
 }

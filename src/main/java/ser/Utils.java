@@ -254,6 +254,17 @@ public class Utils {
     public static JSONObject getSystemConfig() throws Exception {
         return getSystemConfig(null);
     }
+    public static void copyDescriptors(IInformationObject sour, IInformationObject targ) throws Exception {
+        IValueDescriptor[] sdls = sour.getDescriptorList();
+        for (IValueDescriptor sdvl : sdls) {
+            if (!hasDescriptor(targ, sdvl.getDescriptor().getName())) {
+                continue;
+            }
+            targ.setDescriptorValueTyped(sdvl.getDescriptor().getId(),
+                    sour.getDescriptorValue(sdvl.getName())
+            );
+        }
+    }
     public static JSONObject getSystemConfig(IStringMatrix mtrx) throws Exception {
         if(mtrx == null){
             mtrx = server.getStringMatrix("CCM_SYSTEM_CONFIG", session);
